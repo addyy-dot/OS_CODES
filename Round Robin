@@ -1,0 +1,82 @@
+#include<bits/stdc++.h>
+using namespace std;
+
+int main() {
+    int n;
+    cout<<"Enter the no. of processes->";
+    cin>>n;
+
+    int tq;
+    cout<<"Enter the Time Qunatum :";
+    cin>>tq;
+
+    vector<int> arrival(n), burst(n);
+
+     cout<<" Enter Arrival time of all "<<n<<" processes : ";
+
+     for(int i =0;i<n;i++){
+        cin>>arrival[i];
+    }
+    cout << "Enter Burst Time of all " << n << " processes :";
+    for(int i =0;i<n;i++){
+        cin>>burst[i];
+    }
+    vector<int > bur = burst;
+
+    vector<int> ct(n), tat(n), wt(n);
+
+    int time = 0;
+
+    queue<int> q;
+    vector<bool> inQueue(n);
+
+    for(int i =0;i<n;i++){
+        if(time>=arrival[i]){
+            q.push(i);
+            inQueue[i]=1;
+        }
+    }
+    while (!q.empty())
+    {
+        int idx = q.front();
+        q.pop();
+
+        if (bur[idx] > tq)
+        {
+            bur[idx] -= tq;
+            time += tq;
+        }
+        else
+        {
+            time += bur[idx];
+            bur[idx] = 0;
+            ct[idx] = time;
+        }
+
+        for (int i = 0; i < n; i++)
+        {
+            if (time >= arrival[i] && !inQueue[i])
+            {
+                q.push(i);
+                inQueue[i] = 1;
+            }
+        }
+
+        if (bur[idx] != 0)
+        {
+            q.push(idx);
+        }
+    }
+
+    double avg = 0;
+    for (int i = 0; i < n; i++)
+    {
+        tat[i] = ct[i] - arrival[i];
+        wt[i] = tat[i] - burst[i];
+        cout << wt[i] << " ";
+        avg = avg+wt[i];
+    }
+    cout << endl;
+
+    cout << "Average time is->" <<avg / n << endl;
+}
