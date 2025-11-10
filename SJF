@@ -1,0 +1,58 @@
+#include<bits/stdc++.h>
+using namespace std;
+
+int main() {
+    int n;
+    cout<<"Enter the No. of processes :";
+    cin>>n;
+
+    vector<int> arrival(n),burst(n);
+    
+    cout<<"Enter Arrival time of all "<<n<<" processes :";
+
+    for(int i =0;i<n;i++){
+        cin>>arrival[i];
+    }
+
+    cout<<"Enter Burst Time of all "<<n<<" processes :";
+    for(int i =0;i<n;i++){
+        cin>>burst[i];
+    }
+
+    vector<int>bur=burst;
+
+    vector<int> ct(n), tat(n), wt(n);
+    int cnt =0, time =0;
+
+    while(cnt!=n){
+        int idx=-1, bt=INT_MAX;
+        for(int i=0;i<n;i++){
+            if(time>=arrival[i]&&bur[i]!=0&&bt>burst[i]){
+                idx=i;
+                bt=burst[i];
+            }
+        }
+        if(idx=!0){
+            time+= burst[idx];
+            bur[idx]=0;
+            ct[idx]=time;
+            tat[idx]=ct[idx]-arrival[idx];
+            wt[idx]=tat[idx]-burst[idx];
+            cnt++;
+        }
+        else{
+            time++;
+        }
+
+
+    }
+    double sum = 0;
+    for(int i =0;i<n;i++){
+        cout<<wt[i]<<" ";
+        sum = sum+wt[i];
+    }
+    cout<<endl;
+
+    cout<<"Average wait time is : "<<sum/n<<endl;
+
+}
