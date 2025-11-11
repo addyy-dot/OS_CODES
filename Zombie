@@ -1,0 +1,114 @@
+// simple_zombie_orphan_sort.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+// Bubble Sort (Parent)
+void bubbleSort(int arr[], int n) {
+    for (int i = 0; i < n - 1; i++)
+        for (int j = 0; j < n - i - 1; j++)
+            if (arr[j] > arr[j + 1]) {
+                int temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+}
+
+// Selection Sort (Child)
+void selectionSort(int arr[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        int minIndex = i;
+        for (int j = i + 1; j < n; j++)
+            if (arr[j] < arr[minIndex])
+                minIndex = j;
+        int temp = arr[minIndex];
+        arr[minIndex] = arr[i];
+        arr[i] = temp;
+    }
+}
+
+int main() {
+    int n;
+    printf("Enter number of elements: ");
+    scanf("%d", &n);
+
+    int arr[n];
+    printf("Enter elements: ");
+    for (int i = 0; i < n; i++) scanf("%d", &arr[i]);
+
+    int choice;
+    printf("\nWhich state to demonstrate?\n");
+    printf("1. Zombie Process\n");
+    printf("2. Orphan Process\n");
+    printf("Enter choice: ");
+    scanf("%d", &choice);
+
+    pid_t pid = fork();
+
+    if (pid < 0) {
+        printf("Fork failed.\n");
+        exit(1);
+    }
+
+    if (pid == 0) {
+        // --- CHILD PROCESS ---
+        printf("\nChild Process (PID: %d)\n", getpid());
+
+        // Sort using Selection Sort
+        selectionSort(arr, n);
+        printf("Child Sorted Array (Selection Sort): ");
+        for (int i = 0; i < n; i++) printf("%d ", arr[i]);
+        printf("\n");
+
+        if (choice == 1) {
+            printf("Child: Exiting immediately (Zombie demo).\n");
+            exit(0);
+        } 
+        else {
+        	
+        	  //Orphan DEMO
+            printf("Child: Sleeping for 6 seconds (Orphan demo)...\n");
+            sleep(6);
+            printf("\nChild: Woke up, my new parent is PID: %d\n", getppid());
+            printf("Child: Running 'ps' to confirm (PPID should be 1):\n");
+            char cmd[100];
+            sprintf(cmd, "ps -o pid,ppid,stat,comm -p %d", getpid());
+            system(cmd);
+            exit(0);
+        }
+    } 
+    else {
+        // --- PARENT PROCESS ---
+        printf("\nParent Process (PID: %d)\n", getpid());
+
+        // Sort using Bubble Sort
+        bubbleSort(arr, n);
+        printf("Parent Sorted Array (Bubble Sort): ");
+        for (int i = 0; i < n; i++) printf("%d ", arr[i]);
+        printf("\n");
+
+        if (choice == 1) {
+            // ZOMBIE DEMO
+            printf("\nParent: Sleeping 4 seconds before wait() (child becomes zombie)...\n");
+            sleep(4);
+            printf("Parent: Checking child status (should show 'Z' in STAT):\n");
+            char cmd[100];
+            sprintf(cmd, "ps -o pid,ppid,stat,comm -p %d", pid);
+            system(cmd);
+
+            // Reap the child
+            wait(NULL);
+            printf("\nParent: Child reaped. Zombie cleared.\n");
+            printf("Parent: Checking again (child should be gone):\n");
+            system(cmd);
+        } 
+        else {
+            // ORPHAN DEMO
+            printf("\nParent: Exiting immediately (child will become orphan)...\n");
+            exit(0);
+        }
+    }
+
+    return 0;
+}
