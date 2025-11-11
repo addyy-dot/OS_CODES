@@ -1,0 +1,91 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+void BankersAlgo(vector<vector<int>> &alloc,vector<vector<int>> &need,vector<int> &avail){
+    int n=alloc.size();
+    int m=alloc[0].size();
+
+
+    vector<int> safeSeq;
+    vector<bool> finish(n,0);
+    int cnt=0;
+    while(cnt<n){
+        bool found=0;
+        for(int i=0;i<n;i++){
+            if(!finish[i]){
+                int j=0;
+                for(;j<m;j++){
+                    if(need[i][j]>avail[j]){
+                        break;
+                    }
+                }
+                if(j==m){
+                    for(int k=0;k<m;k++){
+                        avail[k]+=alloc[i][k];
+                    }
+                    found=1;
+                    safeSeq.push_back(i);
+                    finish[i]=1;
+                    cnt++;
+                }
+            }
+        }
+
+        if(!found){
+            cout<<"DeadLock possible and we are terminating"<<endl;
+            return;
+        }
+    }
+
+    cout<<"safe Sequence is:"<<endl;
+    for(int i=0;i<n;i++){
+        cout<<"P"<<safeSeq[i]+1<<" ";
+    }
+    cout<<endl;
+    return;
+}
+
+
+int main(){
+
+    int n,m;
+    cout<<"Enter number of processes: ";
+    cin>>n;
+    cout<<"Enter number of resources: ";
+    cin>>m;
+
+    vector<vector<int>> alloc(n),maxNeed(n);
+    vector<int> avail(m);
+
+    cout<<"Enter allocation matrix:"<<endl;
+    for(int i=0;i<n;i++){
+        vector<int> v(m);
+        for(int j=0;j<m;j++){
+            cin>>v[j];
+        }
+        alloc[i]=v;
+    }
+
+    cout<<"Enter maximum need matrix:"<<endl;
+    for(int i=0;i<n;i++){
+        vector<int> v(m);
+        for(int j=0;j<m;j++){
+            cin>>v[j];
+        }
+        maxNeed[i]=v;
+    }
+
+    cout<<"Enter available resources:"<<endl;
+    for(int i=0;i<m;i++){
+        cin>>avail[i];
+    }
+
+    vector<vector<int>> need(n,vector<int> (m));
+    for(int i=0;i<n;i++){
+        for(int j=0;j<m;j++){
+            need[i][j]=maxNeed[i][j]-alloc[i][j];
+        }
+    }
+
+    BankersAlgo(alloc,need,avail);
+}
