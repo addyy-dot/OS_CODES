@@ -1,0 +1,189 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+
+
+int main(){
+
+    vector<int> pages={1, 2, 1, 5, 1, 5, 4, 1, 2, 2, 1, 4, 3, 4, 5 ,2 ,1};
+    
+    int frameSize;
+    cout<<"Enter the FrameSize:";
+    cin>>frameSize;
+
+    unordered_set<int> s;
+    queue<int> q;
+    int pageFaults=0;
+
+    for(int i=0;i<pages.size();i++){
+        if(s.size()<frameSize){
+            if(s.find(pages[i])==s.end()){
+                s.insert(pages[i]);
+                q.push(pages[i]);
+                pageFaults++;
+            }
+        }
+        else{
+            if(s.find(pages[i])==s.end()){
+                int val=q.front();
+                q.pop();
+
+                s.erase(val);
+                s.insert(pages[i]);
+                q.push(pages[i]);
+                pageFaults++;
+            }
+        }
+    }
+    cout<<"Page Faults :"<<pageFaults<<endl;
+}
+
+
+
+#include <bits/stdc++.h>
+using namespace std;
+
+int predict(vector<int>& pages,vector<int> &fr,int index){
+    int val=-1,leastUsed=index;
+
+    for(int i=0;i<fr.size();i++){
+        int j=index;
+        for(;j>=0;j--){
+            if(fr[i]==pages[j]){
+                if(j<leastUsed){
+                    leastUsed=j;
+                    val=i;
+                }
+                break;
+            }
+        }
+
+        if(j==0){
+            return i;
+        }
+    }
+    return (val==-1)? 0:val;
+}
+
+bool search(vector<int> &fr,int key){
+    for(auto i:fr){
+        if(i==key){
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void LRU(vector<int> &pages,int frameSize){
+    int n=pages.size();
+
+    vector<int> fr;
+    int hitPages=0;
+
+    for(int i=0;i<n;i++){
+
+        if(search(fr,pages[i])){
+            hitPages++;
+            continue;
+        }
+
+        if(fr.size()<frameSize){
+            fr.push_back(pages[i]);
+        }
+        else{
+            int j=predict(pages,fr,i-1);
+            fr[j]=pages[i];
+        }
+    }
+    cout<<"No. of hits = "<<hitPages<<endl;
+    cout<<"No. of Page_Faults = "<<n-hitPages<<endl;
+    return;
+}
+
+
+int main(){
+
+    vector<int> pages={1, 2, 1, 5, 1, 5, 4, 1, 2, 2, 1, 4, 3, 4, 5 ,2 ,1};
+    
+    int frameSize;
+    cout<<"Enter the FrameSize:";
+    cin>>frameSize;
+
+    LRU(pages,frameSize);
+
+}
+
+
+
+#include <bits/stdc++.h>
+using namespace std;
+
+int predict(vector<int>& pages,vector<int> &fr,int index){
+    int val=-1,farthest=index;
+
+    for(int i=0;i<fr.size();i++){
+        int j=index;
+        for(;j<pages.size();j++){
+            if(fr[i]==pages[j]){
+                if(j>farthest){
+                    farthest=j;
+                    val=i;
+                }
+                break;
+            }
+        }
+
+        if(j==pages.size()){
+            return i;
+        }
+    }
+    return (val==-1)? 0:val;
+}
+
+bool search(vector<int> &fr,int key){
+    for(auto i:fr){
+        if(i==key){
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void optimalPage(vector<int> &pages,int frameSize){
+    int n=pages.size();
+
+    vector<int> fr;
+    int hitPages=0;
+
+    for(int i=0;i<n;i++){
+
+        if(search(fr,pages[i])){
+            hitPages++;
+            continue;
+        }
+
+        if(fr.size()<frameSize){
+            fr.push_back(pages[i]);
+        }
+        else{
+            int j=predict(pages,fr,i+1);
+            fr[j]=pages[i];
+        }
+    }
+    cout<<"No. of hits = "<<hitPages<<endl;
+    cout<<"No. of Page_Faults = "<<n-hitPages<<endl;
+    return;
+}
+
+
+int main(){
+
+    vector<int> pages={1, 2, 1, 5, 1, 5, 4, 1, 2, 2, 1, 4, 3, 4, 5 ,2 ,1};
+    
+    int frameSize;
+    cout<<"Enter the FrameSize:";
+    cin>>frameSize;
+
+    optimalPage(pages,frameSize);
+
+}
