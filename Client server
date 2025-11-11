@@ -1,0 +1,148 @@
+// client.c
+// Compile: gcc client.c -o client
+// Run:     ./client
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <unistd.h>
+
+#define SHM_KEY 0x1234
+#define MSG_SIZE 256
+
+struct shmseg
+{
+    int ready;
+    char msg[MSG_SIZE];
+};
+
+int main(void)
+{
+    // Get existing shared memory (do not create)
+    int shmid = shmget(SHM_KEY, sizeof(struct shmseg), 0666);
+    if (shmid < 0)
+    {
+        perror("shmget");
+        return 1;
+    }
+
+    // Attach
+    struct shmseg *shm = (struct shmseg *)shmat(shmid, NULL, 0);
+    if (shm == (void *)-1)
+    {
+        perror("shmat");
+        return 1;
+    }
+
+    // Wait until server sets ready=1
+    printf("[client] Waiting for message...\n");
+    while (shm->ready == 0)
+    {
+        usleep(100 * 1000); // 100 ms sleep to avoid busy spinning
+    }
+
+    // Read and display
+    printf("[client] Received: \"%s\"\n", shm->msg);
+
+    // Detach
+    if (shmdt(shm) == -1)
+        perror("shmdt");
+
+    // Remove the shared memory segment
+    if (shmctl(shmid, IPC_RMID, NULL) == -1)
+        perror("shmctl IPC_RMID");
+    else
+        printf("[client] Shared memory removed.\n");
+
+    return 0;
+}
+
+
+
+
+// server.c
+// Compile: gcc server.c -o server
+// Run:     ./server
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <unistd.h>
+
+#define SHM_KEY 0x1234 // same key used by client
+#define MSG_SIZE 256
+
+struct shmseg
+{
+    int ready; // 0 = not ready, 1 = has message
+    char msg[MSG_SIZE];
+};
+
+int main(void)
+{
+    // Create (or get) shared memory
+    int shmid = shmget(SHM_KEY, sizeof(struct shmseg), IPC_CREAT | 0666);
+    if (shmid < 0)
+    {
+        perror("shmget");
+        return 1;
+    }
+
+    // Attach
+    struct shmseg *shm = (struct shmseg *)shmat(shmid, NULL, 0);
+    if (shm == (void *)-1)
+    {
+        perror("shmat");
+        return 1;
+    }
+
+    // Initialize flag
+    shm->ready = 0;
+
+    // Read a line from stdin and write it to shared memory
+    printf("[server] Enter a message: ");
+    fflush(stdout);
+    if (!fgets(shm->msg, MSG_SIZE, stdin))
+    {
+        fprintf(stderr, "No input\n");
+        shmdt(shm);
+        return 1;
+    }
+    // Optional: strip trailing newline
+    size_t len = strlen(shm->msg);
+    if (len && shm->msg[len - 1] == '\n')
+        shm->msg[len - 1] = '\0';
+
+    // Mark as ready
+    shm->ready = 1;
+    printf("[server] Message written. Start the client in another terminal.\n");
+
+    // Detach (do NOT remove; client will remove after reading)
+    if (shmdt(shm) == -1)
+        perror("shmdt");
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
