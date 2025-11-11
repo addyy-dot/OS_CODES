@@ -1,0 +1,173 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+void sstf(vector<int> &request,int head){
+    int n=request.size();
+
+    vector<bool> done(n,0);
+    vector<int> ans;
+    ans.push_back(head);
+
+    int cnt=0,total=0,cur=head;
+    while(cnt<n){
+        int idx=-1,mini=INT_MAX;
+        for(int i=0;i<n;i++){
+            if(!done[i] && mini>abs(request[i]-cur)){
+                idx=i;
+                mini=abs(request[i]-cur);
+            }
+        }
+        done[idx]=1;
+        cur=request[idx];
+        total+=mini;
+        ans.push_back(request[idx]);
+        cnt++;
+    }
+
+    cout << "Total Head Movement:"<<total<<endl;
+
+    cout<<"Movement of Head:"<<endl;
+    for(auto i:ans){
+        cout<<i<<" ";
+    }
+    cout<<endl;
+    return;
+}
+
+void scan(vector<int> &request,int head,int diskSize,bool rightDir){
+
+    vector<int> left,right;
+    if(rightDir){
+        right.push_back(diskSize-1);
+    }
+    else{
+        left.push_back(0);
+    }
+    
+
+    for(auto i:request){
+        if(i<head){
+            left.push_back(i);
+        }
+        else{
+            right.push_back(i);
+        }
+    }
+
+    sort(left.begin(),left.end());
+    sort(right.begin(),right.end());
+
+    vector<int> ans;
+    ans.push_back(head);
+    int total=0,cur=head;
+
+    if(rightDir){
+        for(auto i:right){
+            total+=abs(i-cur);
+            ans.push_back(i);
+            cur=i;
+        }
+        for(int i=left.size()-1;i>=0;i--){
+            total+=abs(left[i]-cur);
+            ans.push_back(left[i]);
+            cur=left[i];
+        }
+    }
+    else{
+        for(auto i:left){
+            total+=abs(i-cur);
+            ans.push_back(i);
+            cur=i;
+        }
+        for(int i=right.size()-1;i>=0;i--){
+            total+=abs(right[i]-cur);
+            ans.push_back(right[i]);
+            cur=right[i];
+        }
+    }
+
+    cout << "Total Head Movement:"<<total<<endl;
+
+    cout<<"Movement of Head:"<<endl;
+    for(auto i:ans){
+        cout<<i<<" ";
+    }
+    cout<<endl;
+    return;
+}
+
+void c_look(vector<int> &request,int head,bool rightDir){
+
+    vector<int> left,right;
+
+    for(auto i:request){
+        if(i<head){
+            left.push_back(i);
+        }
+        else{
+            right.push_back(i);
+        }
+    }
+
+    sort(left.begin(),left.end());
+    sort(right.begin(),right.end());
+
+
+    vector<int> ans;
+    ans.push_back(head);
+    int total=0,cur=head;
+
+    if(rightDir){
+        for(auto i:right){
+            total+=abs(i-cur);
+            ans.push_back(i);
+            cur=i;
+        }
+        for(auto i:left){
+            total+=abs(i-cur);
+            ans.push_back(i);
+            cur=i;
+        }
+    }
+    else{
+        for(auto i:left){
+            total+=abs(i-cur);
+            ans.push_back(i);
+            cur=i;
+        }
+        for(auto i:right){
+            total+=abs(i-cur);
+            ans.push_back(i);
+            cur=i;
+        }
+    }
+
+    cout << "Total Head Movement:"<<total<<endl;
+
+    cout<<"Movement of Head:"<<endl;
+    for(auto i:ans){
+        cout<<i<<" ";
+    }
+    cout<<endl;
+    return;
+}
+
+
+int main(){
+
+    vector<int> request={27, 129, 110, 186, 147, 41, 10, 64, 120};
+    int head=63;
+    int size=200;
+
+    cout << "Initial Head Position: " << head << endl;
+    cout << "Request Queue: ";
+    for(auto i:request){
+        cout<<i<<" ";
+    }
+    cout<<endl;
+
+    sstf(request,head);
+    scan(request,head,size,1);
+    c_look(request,head,1);
+
+}
