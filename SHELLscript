@@ -1,0 +1,68 @@
+cont = 1
+while [ $cont -eq 1 ]
+do
+
+echo "Stud database"
+echo "1.CREATE 2.INSERT 3.DISPLAY 4.UPDATE 5.DELETE 6.EXIT"
+read -p "Enter your choice: " choice
+
+case $choice in
+1)
+    if [ -e data.dat ]; then
+        echo "File already present!"
+    else
+        touch data.dat
+        echo "File created"
+    fi
+    ;;
+
+2)
+    read -p "Enter the reg-no: " regno
+    read -p "Enter the name: " name
+    read -p "Enter Jee percentile: " jee
+    echo "$regno $name $jee" >> data.dat
+    echo "Record inserted"
+    ;;
+
+3)
+    echo "1. Display Complete file"
+    echo "2. Display top records"
+    echo "3. Display bottom records"
+    read -p "Enter option: " option
+    case $option in
+        1) cat data.dat ;;
+        2) head data.dat ;;
+        3) tail data.dat ;;
+        *) echo "Invalid display option" ;;
+    esac
+    ;;
+
+4)
+    read -p "Enter the reg-no to update: " regno
+    grep -v "^$regno " data.dat > temp.dat
+    read -p "Enter new name: " name
+    read -p "Enter new Jee percentile: " jee
+    echo "$regno $name $jee" >> temp.dat
+    mv temp.dat data.dat
+    echo "Record updated!"
+    ;;
+
+5)
+    read -p "Enter reg-no to delete: " regno
+    grep -v "^$regno " data.dat > temp.dat
+    mv temp.dat data.dat
+    echo "Record deleted successfully!"
+    ;;
+
+6)
+    echo "Exiting..."
+    exit 0
+    ;;
+
+*)
+    echo "Invalid choice"
+esac
+echo "Do you want to continue?"
+read cont
+done
+
